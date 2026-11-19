@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catálogo Colore DIMASI 2026, muestra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--green:#00804B;--green-2:#00AF66;--ink:#1F2326;--bg:#E6EAE6;--muted:#5A6168;}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;}
+  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);background:radial-gradient(120% 90% at 50% 40%,#F4F6F3 0%,var(--bg) 60%,#D6DCD6 100%);display:flex;flex-direction:column;min-height:100dvh;overflow:hidden;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;}
+  header h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.01em}
+  header h1 span{color:var(--green)}
+  header p{margin:0;font-size:14px;color:var(--muted)}
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:8px 24px;min-height:0;}
+  #stage{width:100%;max-width:1180px;height:100%;display:flex;align-items:center;justify-content:center;}
+  #book{filter:drop-shadow(0 18px 30px rgba(20,40,30,.22));}
+  .page{background:#fff;}
+  .page img{width:100%;height:100%;object-fit:cover;display:block;user-select:none;-webkit-user-drag:none;}
+  footer{display:flex;align-items:center;justify-content:center;gap:20px;padding:14px 24px 22px;}
+  button{font:inherit;border:0;cursor:pointer;width:48px;height:48px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;transition:background .15s,transform .1s;}
+  button:hover{background:#006B3F}
+  button:active{transform:scale(.96)}
+  button:disabled{background:#B9C2BC;cursor:default}
+  button:focus-visible{outline:3px solid var(--green-2);outline-offset:3px}
+  button svg{width:22px;height:22px}
+  #count{min-width:150px;text-align:center;font-size:15px;font-weight:700}
+  #hint{transition:opacity .4s}
+  @media (max-width:640px){header{padding:12px 16px}header p{display:none}}
+  @media (prefers-reduced-motion:reduce){button{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1><span>Colore DIMASI</span> Catálogo 2026</h1>
+  <p id="hint">Arrastra una esquina o usa las flechas para pasar la página</p>
+</header>
+<main><div id="stage"><div id="book"></div></div></main>
+<footer>
+  <button id="prev" aria-label="Página anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6l6 6"/></svg></button>
+  <div id="count" aria-live="polite">Portada</div>
+  <button id="next" aria-label="Página siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6l-6 6"/></svg></button>
+</footer>
+<script src="page-flip.browser.js"></script>
+<script>
+(function(){
+  var N=14, book=document.getElementById('book');
+  for(var i=1;i<=N;i++){
+    var d=document.createElement('div');
+    d.className='page';
+    if(i===1||i===N) d.setAttribute('data-density','hard');
+    var n=(i<10?'0':'')+i;
+    d.innerHTML='<img src="pages/p-'+n+'.jpg" alt="Página '+i+' del catálogo" '+(i>4?'loading="lazy"':'')+'>';
+    book.appendChild(d);
+  }
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var pf=new St.PageFlip(book,{
+    width:680,height:880,size:'stretch',
+    minWidth:280,maxWidth:680,minHeight:362,maxHeight:880,
+    showCover:true,maxShadowOpacity:.45,mobileScrollSupport:false,
+    flippingTime:reduce?1:900,usePortrait:true,autoSize:true
+  });
+  pf.loadFromHTML(book.querySelectorAll('.page'));
+  var prev=document.getElementById('prev'),next=document.getElementById('next'),count=document.getElementById('count'),hint=document.getElementById('hint');
+  function update(){
+    var i=pf.getCurrentPageIndex(), total=pf.getPageCount(), portrait=pf.getOrientation()==='portrait';
+    var label;
+    if(i===0) label='Portada';
+    else if(i===total-1 && !portrait) label='Contraportada';
+    else if(portrait || i===total-1) label='Página '+(i+1)+' de '+total;
+    else label='Páginas '+(i+1)+' y '+(i+2)+' de '+total;
+    count.textContent=label;
+    prev.disabled=(i===0);
+    next.disabled=(i>=total-1);
+  }
+  pf.on('flip',function(){update(); hint.style.opacity='0';});
+  pf.on('changeOrientation',update);
+  prev.addEventListener('click',function(){pf.flipPrev();});
+  next.addEventListener('click',function(){pf.flipNext();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'){pf.flipNext();}
+    else if(e.key==='ArrowLeft'){pf.flipPrev();}
+  });
+  update();
+})();
+</script>
+</body>
+</html>
